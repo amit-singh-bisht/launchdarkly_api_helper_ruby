@@ -135,8 +135,8 @@ module LaunchdarklyApiHelper
   # == Here, 'developer_flag_for_regression' is the flag key and default is our Project name - Browserstack
   # == You can update any parameter of feature flag using this method
 
-  def ld_toggle_flag_for_specific_environment(env, flag, flag_value = true)
-    @launchdarkly_helper.toggle_flag_for_specific_environment(env, flag, flag_value)
+  def ld_toggle_specific_environment(env, flag, flag_value = true)
+    @launchdarkly_helper.toggle_specific_environment(env, flag, flag_value)
   end
 
   # == Get status of feature flag
@@ -144,12 +144,27 @@ module LaunchdarklyApiHelper
   #
   # [fetch_flag_toggle_status_response, feature_flag_variation_index_response, feature_flag_variation_value_response, feature_flag_variation_name_response]
 
-  def ld_toggle_variation_served_status(env, flag)
-    @launchdarkly_helper.toggle_variation_served_status(env, flag)
+  def ld_toggle_variation_served(env, flag)
+    @launchdarkly_helper.ld_toggle_variation_served(env, flag)
   end
 
-  def delete_flag(flag)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
-    ld_request(:delete, request_url)
+  def ld_rules_clauses_index(env, flag, clause_name)
+    @launchdarkly_helper.rules_clauses_index(env, flag, clause_name)
+  end
+
+  def ld_get_values_from_clauses(env, flag, clause_name)
+    @launchdarkly_helper.get_values_from_clauses(env, flag, clause_name)
+  end
+
+  def ld_add_values_to_clause(env, flag, clause_name, clause_value)
+    @launchdarkly_helper.add_values_to_clause(env, flag, clause_name, clause_value)
+  end
+
+  def ld__remove_values_from_clause(env, flag, clause_name, clause_value)
+    @launchdarkly_helper.remove_values_from_clause(env, flag, clause_name, clause_value)
+  end
+
+  def ld_delete_flag(flag)
+    @launchdarkly_helper.delete_flag(flag)
   end
 end

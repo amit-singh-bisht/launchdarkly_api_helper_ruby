@@ -59,18 +59,18 @@ class LaunchdarklyApiHelperClass
     ld_request(:post, request_url, request_body)
   end
 
-  def toggle_flag_for_specific_environment(env, flag, flag_value)
+  def toggle_specific_environment(env, flag, flag_value)
     request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
     request_body = { 'op' => 'replace', 'path' => "/environments/#{env}/on", 'value' => flag_value }
     response_body = ld_request(:patch, request_url, [request_body])
     response_body['environments'][env]['on']
   end
 
-  def feature_flag_variation_index(fetch_flag_toggle_status_response, fetch_flag_details_response)
-    variations = fetch_flag_details_response['variations']
+  def feature_flag_variation_index(status_response, details_response)
+    variations = details_response['variations']
     value_at_index = -1
     variations.length.times do |index|
-      next unless variations[index]['value'].eql? fetch_flag_toggle_status_response
+      next unless variations[index]['value'].eql? status_response
 
       value_at_index = index
       break
@@ -78,60 +78,81 @@ class LaunchdarklyApiHelperClass
     value_at_index
   end
 
-  def feature_flag_variation_value(fetch_flag_details_response, feature_flag_variation_index_response)
-    fetch_flag_details_response['variations'][feature_flag_variation_index_response]['value']
+  def feature_flag_variation_value(details_response, index_response)
+    details_response['variations'][index_response]['value']
   end
 
-  def feature_flag_variation_name(fetch_flag_details_response, feature_flag_variation_index_response)
-    fetch_flag_details_response['variations'][feature_flag_variation_index_response]['name']
+  def feature_flag_variation_name(details_response, index_response)
+    details_response['variations'][index_response]['name']
   end
 
-  def toggle_variation_served_status(env, flag)
-    fetch_flag_details_response = fetch_flag_details(env, flag)
-    fetch_flag_toggle_status_response = fetch_flag_toggle_status(env, flag)
-    feature_flag_variation_index_response = feature_flag_variation_index(fetch_flag_toggle_status_response, fetch_flag_details_response) # ['environments'][env]['fallthrough']['variation']
-    feature_flag_variation_value_response = feature_flag_variation_value(fetch_flag_details_response, feature_flag_variation_index_response) # ['variations'][feature_flag_variation_index_response]['value']
-    feature_flag_variation_name_response = feature_flag_variation_name(fetch_flag_details_response, feature_flag_variation_index_response)
-    [fetch_flag_toggle_status_response, feature_flag_variation_index_response, feature_flag_variation_value_response, feature_flag_variation_name_response]
+  def ld_toggle_variation_served(env, flag)
+    details_response = fetch_flag_details(env, flag)
+    toggle_status_response = fetch_flag_toggle_status(env, flag)
+    variation_index_response = feature_flag_variation_index(toggle_status_response, details_response) # ['environments'][env]['fallthrough']['variation']
+    variation_value_response = feature_flag_variation_value(details_response, variation_index_response) # ['variations'][variation_index_response]['value']
+    variation_name_response = feature_flag_variation_name(details_response, variation_index_response)
+    [toggle_status_response, variation_index_response, variation_value_response, variation_name_response]
   end
 
-  def search_value_in_hash(feature_flag_hash, attribute)
+  def search_rule_index_clause_index(clause_name)
+    rule_at_index = -1
+    clause_at_index = -1
+    @feature_flag_rules_list.length.times do |rule_index|
+      @feature_flag_clauses_list = @feature_flag_rules_list[rule_index]['clauses']
+      @feature_flag_clauses_list.length.times do |clause_index|
+        next unless @feature_flag_clauses_list[clause_index]['attribute'].eql? clause_name
+
+        rule_at_index = rule_index
+        clause_at_index = clause_index
+        break
+      end
+    end
+    [rule_at_index, clause_at_index]
+  end
+
+  def search_value_index(rule_at_index, clause_at_index, clause_value)
     value_at_index = -1
-    feature_flag_hash.length.times do |index|
-      next unless feature_flag_hash[index].to_s.include? attribute.to_s
+    @feature_flag_values_list = @feature_flag_rules_list[rule_at_index]['clauses'][clause_at_index]['values']
+    @feature_flag_values_list.length.times do |value_index|
+      next unless @feature_flag_values_list[value_index].eql? clause_value
 
-      value_at_index = index
+      value_at_index = value_index
       break
     end
     value_at_index
   end
 
-  def feature_flag_rules_clauses_index(flag, attribute, env = ENV['PROFILE'])
-    @feature_flag_response = fetch_flag(flag, env)
-    feature_flag_env = @feature_flag_response['environments'][env]
-    @feature_flag_env_rules = feature_flag_env['rules']
-    rule_index = search_value_in_hash(@feature_flag_env_rules, attribute)
-    @feature_flag_env_rules_clauses = @feature_flag_env_rules[rule_index]['clauses']
-    clause_index = search_value_in_hash(@feature_flag_env_rules_clauses, attribute)
-    [rule_index, clause_index]
+  def rules_clauses_index(env, flag, clause_name)
+    feature_flag_response = fetch_flag_details(env, flag)
+    @feature_flag_rules_list = feature_flag_response['environments'][env]['rules']
+    search_rule_index_clause_index(clause_name)
   end
 
-  def feature_flag_add_values_to_rules(flag, attribute, value, env = ENV['PROFILE'])
-    @flag = flag
-    @attribute = attribute
-    @value = value
-    @rule_index, @clause_index = feature_flag_rules_clauses_index(flag, attribute)
+  def get_values_from_clauses(env, flag, clause_name)
+    rule_at_index, clause_at_index = feature_flag_rules_clauses_index(env, flag, clause_name)
+    @feature_flag_rules_list[rule_at_index]['clauses'][clause_at_index]['values']
+  end
+
+  def add_values_to_clause(env, flag, clause_name, clause_value)
+    rule_at_index, clause_at_index = feature_flag_rules_clauses_index(env, flag, clause_name)
     request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
-    request_body = { 'op' => 'add', 'path' => "/environments/#{env}/rules/#{@rule_index}/clauses/#{@clause_index}/values/0", 'value' => value }
+    request_body = { 'op' => 'add', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/0", 'value' => clause_value }
     ld_request(:patch, request_url, [request_body])
   end
 
-  def feature_flag_remove_values_to_rules(flag = @flag, attribute = @attribute, value = @value, env = ENV['PROFILE'])
-    @rule_index, @clause_index = feature_flag_rules_clauses_index(flag, attribute, env = ENV['PROFILE']) unless flag || attribute
-    feature_flag_env_rules_clauses_values = @feature_flag_env_rules_clauses[@clause_index]['values']
-    value_index = search_value_in_hash(feature_flag_env_rules_clauses_values, value)
+  def remove_values_from_clause(env, flag, clause_name, clause_value)
+    rule_at_index, clause_at_index = feature_flag_rules_clauses_index(env, flag, clause_name)
+    value_at_index = search_value_index(rule_at_index, clause_at_index, clause_value)
+    puts "value_index: #{value_at_index}"
     request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
-    request_body = { 'op': 'test', 'path': "/environments/#{env}/rules/#{@rule_index}/clauses/#{@clause_index}/values/#{value_index}", 'value': value }, { 'op' => 'remove', 'path' => "/environments/#{env}/rules/#{@rule_index}/clauses/#{@clause_index}/values/#{value_index}" }
+    request_body = { 'op' => 'test', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}", 'value' => clause_value },
+                   { 'op' => 'remove', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}" }
     ld_request(:patch, request_url, request_body)
+  end
+
+  def delete_flag(flag)
+    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
+    ld_request(:delete, request_url)
   end
 end
