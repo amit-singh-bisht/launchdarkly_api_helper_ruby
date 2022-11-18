@@ -22,10 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'uri'
-require 'json'
-require 'net/http'
-require 'logger'
 require_relative 'launchdarkly_api_helper/constants'
 require_relative 'launchdarkly_api_helper/launchdarkly_api_helper_class'
 
@@ -49,16 +45,27 @@ module LaunchdarklyApiHelper
   # https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
   #
   # == key (*required)
-  # env
+  # env, flag
   #
-  # == Here, 'developer_flag_for_regression' is the flag key and default is our Project name - Browserstack
+  # == Here, 'developer_flag_for_regression' is the feature flag name and default is our Project name - eg. AmitSinghBisht
   # == By default, this returns the configurations for all environments
-  # == You can filter environments with the env query parameter. For example, setting env=k8s restricts the returned configurations to just the k8s environment
-  # https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=k8s
+  # == You can filter environments with the env query parameter. For example, setting env=staging restricts the returned configurations to just the staging environment
+  # https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
 
-  def fetch_flag(flag, env)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}?env=#{env}"
-    @launchdarkly_helper.ld_request(:get, request_url)
+  def ld_fetch_flag_details(env, flag)
+    @launchdarkly_helper.fetch_flag_details(env, flag)
+  end
+
+  # == Get toggle status feature flag
+  #
+  # == key (*required)
+  # env, flag
+  #
+  # response = https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
+  # grab the value of the ['environments'][env]['on'] obtained from the above response
+
+  def ld_fetch_flag_toggle_status(env, flag)
+    @launchdarkly_helper.fetch_flag_toggle_status(env, flag)
   end
 
   # == Create a feature flag
@@ -113,11 +120,8 @@ module LaunchdarklyApiHelper
   #
   # Default will specify which variation to serve when flag is on or off. In above example when flag is turned on, '1' variation is served [Note: 0 and 1 are index position], so variations at first index ie variations[1] will be served when flag is turned on ie 'age': 20
 
-  def create_flag(key, name: key, description: key, tags: ['created_via_regression_api'])
-    request_url = LAUNCH_DARKLY_FLAGS
-    request_body = {}
-    request_body.merge!(key: key, name: name, description: description, tags: tags)
-    ld_request(:post, request_url, request_body)
+  def ld_create_flag(key, name = key, description = key, tags = ['created_via_regression_api'])
+    @launchdarkly_helper.create_flag(key, name, description, tags)
   end
 
   # == Update feature flag
@@ -131,62 +135,17 @@ module LaunchdarklyApiHelper
   # == Here, 'developer_flag_for_regression' is the flag key and default is our Project name - Browserstack
   # == You can update any parameter of feature flag using this method
 
-  def toggle_flag_for_specific_environment(env, flag, flag_value: true)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
-    request_body = { 'op' => 'replace', 'path' => "/environments/#{env}/on", 'value' => flag_value }
-    response_body = ld_request(:patch, request_url, [request_body])
-    response_body['environments'][env]['on']
+  def ld_toggle_flag_for_specific_environment(env, flag, flag_value = true)
+    @launchdarkly_helper.toggle_flag_for_specific_environment(env, flag, flag_value)
   end
 
-  def toggle_variation_served_status(flag, env = ENV['PROFILE'])
-    feature_flag_response = fetch_flag(flag, env)
-    feature_flag_env = feature_flag_response['environments'][env]
-    feature_flag_toggle_status = feature_flag_env['on']
-    feature_flag_variation_index = feature_flag_env['fallthrough']['variation']
-    feature_flag_variation = feature_flag_response['variations'][feature_flag_variation_index]
-    feature_flag_variation_value = feature_flag_variation['value']
-    feature_flag_variation_name = feature_flag_variation['name']
-    [feature_flag_toggle_status, feature_flag_variation_value, feature_flag_variation_name]
-  end
+  # == Get status of feature flag
+  # https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
+  #
+  # [fetch_flag_toggle_status_response, feature_flag_variation_index_response, feature_flag_variation_value_response, feature_flag_variation_name_response]
 
-  def search_value_in_hash(feature_flag_hash, attribute)
-    value_at_index = -1
-    feature_flag_hash.length.times do |index|
-      next unless feature_flag_hash[index].to_s.include? attribute.to_s
-
-      value_at_index = index
-      break
-    end
-    value_at_index
-  end
-
-  def feature_flag_rules_clauses_index(flag, attribute, env = ENV['PROFILE'])
-    @feature_flag_response = fetch_flag(flag, env)
-    feature_flag_env = @feature_flag_response['environments'][env]
-    @feature_flag_env_rules = feature_flag_env['rules']
-    rule_index = search_value_in_hash(@feature_flag_env_rules, attribute)
-    @feature_flag_env_rules_clauses = @feature_flag_env_rules[rule_index]['clauses']
-    clause_index = search_value_in_hash(@feature_flag_env_rules_clauses, attribute)
-    [rule_index, clause_index]
-  end
-
-  def feature_flag_add_values_to_rules(flag, attribute, value, env = ENV['PROFILE'])
-    @flag = flag
-    @attribute = attribute
-    @value = value
-    @rule_index, @clause_index = feature_flag_rules_clauses_index(flag, attribute)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
-    request_body = { 'op' => 'add', 'path' => "/environments/#{env}/rules/#{@rule_index}/clauses/#{@clause_index}/values/0", 'value' => value }
-    ld_request(:patch, request_url, [request_body])
-  end
-
-  def feature_flag_remove_values_to_rules(flag = @flag, attribute = @attribute, value = @value, env = ENV['PROFILE'])
-    @rule_index, @clause_index = feature_flag_rules_clauses_index(flag, attribute, env = ENV['PROFILE']) unless flag || attribute
-    feature_flag_env_rules_clauses_values = @feature_flag_env_rules_clauses[@clause_index]['values']
-    value_index = search_value_in_hash(feature_flag_env_rules_clauses_values, value)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
-    request_body = { 'op': 'test', 'path': "/environments/#{env}/rules/#{@rule_index}/clauses/#{@clause_index}/values/#{value_index}", 'value': value }, { 'op' => 'remove', 'path' => "/environments/#{env}/rules/#{@rule_index}/clauses/#{@clause_index}/values/#{value_index}" }
-    ld_request(:patch, request_url, request_body)
+  def ld_toggle_variation_served_status(env, flag)
+    @launchdarkly_helper.toggle_variation_served_status(env, flag)
   end
 
   def delete_flag(flag)
@@ -194,5 +153,3 @@ module LaunchdarklyApiHelper
     ld_request(:delete, request_url)
   end
 end
-
-
