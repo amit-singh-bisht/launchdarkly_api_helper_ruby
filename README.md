@@ -27,10 +27,11 @@ To perform any operations such as add, remove, replace, move, copy, test you sho
 ```ruby
 parameters:
 access_token (*required): this token will be used to send all requests to LaunchDarkly (string)
-log_file: all logs will be writeen to file 'launchdarkly.log' by default if no file name specified
+project_name: provide project name of your organistaion (NOTE: for most, it should be `default` unless you have made some explicit changes)
+log_file: all logs will be written to file 'launchdarkly.log' by default if no file name specified (string)
 
 # set your LD API token and log file to capture logs
-def ld_access_token(access_token, log_file = 'launchdarkly.log') 
+def ld_access_token(access_token, project_name = 'default', log_file = 'launchdarkly.log') 
   # code ...
 end
 ```
@@ -41,21 +42,21 @@ end
 GET REQUEST
 https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
 
-parameters:
-env (*required): name of the environment for which you want to get the details (string)
-flag (*required): name of the feature flag for which you want to get the details (string)
-                                             
-Here, 'developer_flag_for_regression' is the feature flag name and default is our Project name - eg. AmitSinghBisht
+Here, 'developer_flag_for_regression' is the feature flag name and `default` is our Project name - eg. AmitSinghBisht
 By default, this returns the configurations for all environments
 You can filter environments with the env query parameter. For example, setting env=staging restricts the returned configurations to just the staging environment
 https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
 
 # this method will give you entire details about a flag for that particular environment
 def ld_fetch_flag_details(env, flag)
   # code ...
 end
 
-@return value (response of feature flag details):
+@return parameter: (response of feature flag details)
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
 ```
 
@@ -66,15 +67,12 @@ parameters:
 env (*required): name of the environment for which you want to get the details (string) 
 flag (*required): name of the feature flag for which you want to get the details (string)
 
-response = https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
-grab the value of the ['environments'][env]['on'] obtained from the above response
-
 # this method will return the status of the flag, whether it is on or off viz set to true or false
 def ld_fetch_flag_toggle_status(env, flag)
   # code ...
 end
 
-@return value (response of feature flag toggle status):
+@return parameter: (response of feature flag toggle status)
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 response['environments'][env]['on'] (boolean)
 ```
@@ -141,20 +139,20 @@ https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
 PATCH REQUEST
 https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
 
+Here, 'developer_flag_for_regression' is the flag key and `default` is our Project name - eg. AmitSinghBisht
+You can update any parameter of feature flag using this method
+
 parameters:
 env (*required): name of the environment for which you want to get the details (string)
 flag (*required): name of the feature flag for which you want to get the details (string)
 flag_value: status of the feature flag that you want to set either on (true) or off (false) (boolean)
-
-Here, 'developer_flag_for_regression' is the flag key and default is our Project name - eg. AmitSinghBisht
-You can update any parameter of feature flag using this method
 
 # this method will be used to toggle status of feature flag either on / off for a particular environment
 def ld_toggle_specific_environment(env, flag, flag_value = true)
   # code ...
 end
 
-@return value (response of feature flag toggle status):
+@return parameter: (response of feature flag toggle status)
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 response['environments'][env]['on'] (boolean)
 ```
@@ -167,7 +165,8 @@ parameters:
 env (*required): name of the environment for which you want to get the details (string)
 flag (*required): name of the feature flag for which you want to get the details (string)
 
-def ld_toggle_variation_served(env, flag)
+# this method will get important parameters from the response
+def flag_variation_served(env, flag)
   # code ...
 end
 
@@ -176,38 +175,131 @@ end
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 fetch_flag_toggle_status_response: response['environments'][env]['on'] (boolean)
 feature_flag_variation_index_response: response (integer)
-feature_flag_variation_value_response: response['variations'][feature_flag_variation_index_response]['value'] (object)
+feature_flag_variation_value_response: response['variations'][feature_flag_variation_index_response]['value'] (string)
 feature_flag_variation_name_response: response['variations'][feature_flag_variation_index_response]['name'] (string)
 ```
 
 ```ruby
+
+"rules": [
+  {                                   # rules/0
+    "variation": 0,
+    "clauses": [
+      {                               # rules/0/clauses/0
+        "attribute": "groups",
+        "op": "in",
+        "values": ["Top Customers"],
+        "negate": false
+      },
+      {                               # rules/0/clauses/1
+        "attribute": "email",
+        "op": "endsWith",
+        "values": ["gmail.com"],
+        "negate": false
+      }
+    ]
+  },
+  {                                   # rules/1
+    "variation": 1,
+    "clauses": [
+      {                               # rules/1/clauses/0
+        "attribute": "country",
+        "op": "in",
+        "values": [
+          "in",                       # rules/1/clauses/0/values/0
+          "eu"                        # rules/1/clauses/0/values/1
+        ],
+        "negate": false
+      }
+    ]
+  }
+]
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+
+# this method will return the index of rules and clauses by searching for clause_name in response
 def ld_rules_clauses_index(env, flag, clause_name)
   # code ...
 end
+
+@returns: [rule_at_index, clause_at_index]
+@return parameter:
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" ['environments'][env]['rules']
+rule_at_index = response[rule_index]  (integer) # index at which rule is found
+clause_at_index = response[rule_index]['clauses'][clause_index]  (integer) # index at which clause is found 
 ```
 
 ```ruby
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+
+# this method will return values inside a particular clause by searching for clause_name in response
 def ld_get_values_from_clauses(env, flag, clause_name)
   # code ...
 end
+
+@return parameter: values_for_clause_name
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" ['environments'][env]['rules']
+values_for_clause_name = response[rule_at_index]['clauses'][clause_at_index]['values'] (string)
 ```
 
 ```ruby
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+clause_value (*required): value that you want to add to a particular clause (NOTE: it will be appened at zeroth 0th index)
+
+# this method will help you to add a value to a particular clause by searching for clause_name in response
 def ld_add_values_to_clause(env, flag, clause_name, clause_value)
   # code ...
 end
+
+@return parameter: (response of feature flag details)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
 ```
 
 ```ruby
-def ld__remove_values_from_clause(env, flag, clause_name, clause_value)
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+clause_value (*required): value that you want to add to a particular clause (NOTE: it will be appened at zeroth 0th index)
+
+# this method will help you to remove a value to a particular clause by searching for clause_name in response
+def ld_remove_values_from_clause(env, flag, clause_name, clause_value)
   # code ...
 end
+
+@return parameter: (response of feature flag details)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
 ```
 
 ```ruby
+Delete feature flag
+https://apidocs.launchdarkly.com/tag/Feature-flags#operation/deleteFeatureFlag
+
+DELETE REQUEST
+https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
+
+Here, 'developer_flag_for_regression' is the flag key and default is our Project name - eg. AmitSinghBisht
+You can delete any feature flag using this method
+
+parameters:
+flag (*required): name of the feature flag for which you want to get the details (string)
+
+# this method will delete a feature flag in launchdarkly (NOTE: env resided inside flag which means flag is parent, so deleting a feature flag will delete it from all environment)
 def ld_delete_flag(flag)
   # code ...
 end
+
+@return parameter: (response of feature flag details)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
 ```
 
 ## Development
