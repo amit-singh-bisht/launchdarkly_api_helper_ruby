@@ -34,8 +34,8 @@ module LaunchdarklyApiHelper
   # == To perform any operations such as add, remove, replace, move, copy, test you should have a working knowledge of JSON Patch
   # https://datatracker.ietf.org/doc/html/rfc6902
 
-  def ld_access_token(access_token, log_file = 'launchdarkly.log')
-    @launchdarkly_helper = LaunchdarklyApiHelperClass.new(access_token, log_file)
+  def ld_access_token(access_token, project_name = 'default', log_file = 'launchdarkly.log')
+    @launchdarkly_helper = LaunchdarklyApiHelperClass.new(access_token, project_name, log_file)
   end
 
   # == Get feature flag

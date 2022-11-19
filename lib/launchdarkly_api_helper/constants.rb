@@ -1,5 +1,3 @@
-LAUNCH_DARKLY_FLAGS = 'https://app.launchdarkly.com/api/v2/flags/default'.freeze
-LAUNCH_DARKLY_PROJECTS = 'https://app.launchdarkly.com/api/v2/projects/default'.freeze
 REQUEST_CLASSES = {
   get: {
     'method' => Net::HTTP::Get,
