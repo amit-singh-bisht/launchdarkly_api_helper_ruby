@@ -9,11 +9,9 @@ require_relative 'constants'
 # All methods related to launch darkly api are defined here
 class LaunchdarklyApiHelperClass
 
-  @launch_darkly_flags = 'https://app.launchdarkly.com/api/v2/flags/project_name'
-
   def initialize(access_token, project_name, log_file)
     @access_token = access_token
-    @launch_darkly_flags.gsub! 'project_name', project_name
+    @launch_darkly_flags = 'https://app.launchdarkly.com/api/v2/flags/project_name'.gsub 'project_name', project_name
     @logger = Logger.new(log_file)
   end
 
@@ -142,17 +140,15 @@ class LaunchdarklyApiHelperClass
     rule_at_index, clause_at_index = rules_clauses_index(env, flag, clause_name)
     request_url = "#{@launch_darkly_flags}/#{flag}"
     request_body = { 'op' => 'add', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/0", 'value' => clause_value }
-    ld_request(:patch, request_url, [request_body])
+    ld_request(:patch, request_url, [request_body])['environments'][env]['rules'][rule_at_index]['clauses'][clause_at_index]['values']
   end
 
   def remove_values_from_clause(env, flag, clause_name, clause_value)
     rule_at_index, clause_at_index = rules_clauses_index(env, flag, clause_name)
     value_at_index = search_value_index(rule_at_index, clause_at_index, clause_value)
-    puts "value_index: #{value_at_index}"
     request_url = "#{@launch_darkly_flags}/#{flag}"
-    request_body = { 'op' => 'test', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}", 'value' => clause_value },
-                   { 'op' => 'remove', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}" }
-    ld_request(:patch, request_url, request_body)
+    request_body = [{ 'op' => 'remove', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}" }]
+    ld_request(:patch, request_url, request_body)['environments'][env]['rules'][rule_at_index]['clauses'][clause_at_index]['values']
   end
 
   def delete_flag(flag)
