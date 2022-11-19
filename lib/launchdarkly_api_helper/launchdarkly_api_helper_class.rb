@@ -8,8 +8,12 @@ require_relative 'constants'
 
 # All methods related to launch darkly api are defined here
 class LaunchdarklyApiHelperClass
-  def initialize(access_token, log_file)
+
+  @launch_darkly_flags = 'https://app.launchdarkly.com/api/v2/flags/project_name'
+
+  def initialize(access_token, project_name, log_file)
     @access_token = access_token
+    @launch_darkly_flags.gsub! 'project_name', project_name
     @logger = Logger.new(log_file)
   end
 
@@ -43,7 +47,7 @@ class LaunchdarklyApiHelperClass
   end
 
   def fetch_flag_details(env, flag)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}?env=#{env}"
+    request_url = "#{@launch_darkly_flags}/#{flag}?env=#{env}"
     ld_request(:get, request_url)
   end
 
@@ -53,14 +57,14 @@ class LaunchdarklyApiHelperClass
   end
 
   def create_flag(key, name, description, tags)
-    request_url = LAUNCH_DARKLY_FLAGS
+    request_url = @launch_darkly_flags
     request_body = {}
     request_body.merge!(key: key, name: name, description: description, tags: tags)
     ld_request(:post, request_url, request_body)
   end
 
   def toggle_specific_environment(env, flag, flag_value)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
+    request_url = "#{@launch_darkly_flags}/#{flag}"
     request_body = { 'op' => 'replace', 'path' => "/environments/#{env}/on", 'value' => flag_value }
     response_body = ld_request(:patch, request_url, [request_body])
     response_body['environments'][env]['on']
@@ -130,29 +134,29 @@ class LaunchdarklyApiHelperClass
   end
 
   def get_values_from_clauses(env, flag, clause_name)
-    rule_at_index, clause_at_index = feature_flag_rules_clauses_index(env, flag, clause_name)
+    rule_at_index, clause_at_index = rules_clauses_index(env, flag, clause_name)
     @feature_flag_rules_list[rule_at_index]['clauses'][clause_at_index]['values']
   end
 
   def add_values_to_clause(env, flag, clause_name, clause_value)
-    rule_at_index, clause_at_index = feature_flag_rules_clauses_index(env, flag, clause_name)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
+    rule_at_index, clause_at_index = rules_clauses_index(env, flag, clause_name)
+    request_url = "#{@launch_darkly_flags}/#{flag}"
     request_body = { 'op' => 'add', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/0", 'value' => clause_value }
     ld_request(:patch, request_url, [request_body])
   end
 
   def remove_values_from_clause(env, flag, clause_name, clause_value)
-    rule_at_index, clause_at_index = feature_flag_rules_clauses_index(env, flag, clause_name)
+    rule_at_index, clause_at_index = rules_clauses_index(env, flag, clause_name)
     value_at_index = search_value_index(rule_at_index, clause_at_index, clause_value)
     puts "value_index: #{value_at_index}"
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
+    request_url = "#{@launch_darkly_flags}/#{flag}"
     request_body = { 'op' => 'test', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}", 'value' => clause_value },
                    { 'op' => 'remove', 'path' => "/environments/#{env}/rules/#{rule_at_index}/clauses/#{clause_at_index}/values/#{value_at_index}" }
     ld_request(:patch, request_url, request_body)
   end
 
   def delete_flag(flag)
-    request_url = "#{LAUNCH_DARKLY_FLAGS}/#{flag}"
+    request_url = "#{@launch_darkly_flags}/#{flag}"
     ld_request(:delete, request_url)
   end
 end

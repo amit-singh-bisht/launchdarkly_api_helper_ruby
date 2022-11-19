@@ -1,4 +1,4 @@
-# LaunchdarklyApiHelper
+# LaunchdarklyApiHelper ![alt_text](https://badge.fury.io/rb/launchdarkly_api_helper.svg)
 
 [LaunchDarklyApiHelper](https://rubygems.org/gems/launchdarkly_api_helper) provides you a way to access your [Launch Darkly](https://apidocs.launchdarkly.com/) account using [API token](https://app.launchdarkly.com/settings/authorization/tokens/new) to view, edit or delete them accordingly.
 
@@ -162,7 +162,11 @@ response['environments'][env]['on'] (boolean)
 ```ruby
 Get status of feature flag
 https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
- 
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+
 def ld_toggle_variation_served(env, flag)
   # code ...
 end
