@@ -25,145 +25,61 @@
 require_relative 'launchdarkly_api_helper/constants'
 require_relative 'launchdarkly_api_helper/launchdarkly_api_helper_class'
 
-# All methods related to launch darkly api are defined here
+# LaunchDarklyApiHelper provides you a way to access your Launch Darkly account using API token to view, edit or delete them accordingly.
 module LaunchdarklyApiHelper
   class Error < StandardError; end
 
-  # == LaunchDarkly REST API
-  # https://apidocs.launchdarkly.com/
-  # == To perform any operations such as add, remove, replace, move, copy, test you should have a working knowledge of JSON Patch
-  # https://datatracker.ietf.org/doc/html/rfc6902
-
+  # set your LD API token and log file to capture logs
   def ld_access_token(access_token, project_name = 'default', log_file = 'launchdarkly.log')
     @launchdarkly_helper = LaunchdarklyApiHelperClass.new(access_token, project_name, log_file)
   end
 
-  # == Get feature flag
-  # https://apidocs.launchdarkly.com/tag/Feature-flags#operation/getFeatureFlag
-  #
-  # == GET REQUEST
-  # https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
-  #
-  # == key (*required)
-  # env, flag
-  #
-  # == Here, 'developer_flag_for_regression' is the feature flag name and default is our Project name - eg. AmitSinghBisht
-  # == By default, this returns the configurations for all environments
-  # == You can filter environments with the env query parameter. For example, setting env=staging restricts the returned configurations to just the staging environment
-  # https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
-
+  # this method will give you entire details about a flag for that particular environment
   def ld_fetch_flag_details(env, flag)
     @launchdarkly_helper.fetch_flag_details(env, flag)
   end
 
-  # == Get toggle status feature flag
-  #
-  # == key (*required)
-  # env, flag
-  #
-  # response = https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
-  # grab the value of the ['environments'][env]['on'] obtained from the above response
-
+  # this method will return the status of the flag, whether it is on or off viz set to true or false
   def ld_fetch_flag_toggle_status(env, flag)
     @launchdarkly_helper.fetch_flag_toggle_status(env, flag)
   end
 
-  # == Create a feature flag
-  # https://apidocs.launchdarkly.com/tag/Feature-flags/#operation/postFeatureFlag
-  #
-  # == POST REQUEST
-  # https://app.launchdarkly.com/api/v2/flags/default
-  #
-  # Here, default is our Project name - Browserstack
-  #
-  # key (*required): A unique key used to reference the flag in your code (string)
-  #
-  # name (*required): A human-friendly name for the feature flag (string)
-  #
-  # description: Description of the feature flag. Defaults to an empty string (string)
-  #
-  # tags: Tags for the feature flag. Defaults to an empty array (Array of strings)
-  #
-  # variations: An array of possible variations for the flag. The variation values must be unique. If omitted, two boolean variations of true and false will be used (Array of objects)
-  #
-  # defaults
-  # * onVariation (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is on (integer)
-  # * offVariation (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is off (integer)
-  #
-  #     {
-  #       "key": "developer_flag_for_regression",
-  #       "name": "developer_flag_for_regression",
-  #       "description": "developer_flag_for_regression is created via regression
-  #                       api on 18_10_2022",
-  #       "tags": [
-  #           "created_via_regression_api_on_18_10_2022"
-  #       ],
-  #       "variations": [
-  #           {
-  #               "age": 10
-  #           },
-  #           {
-  #               "age": 20
-  #           }
-  #       ],
-  #       "defaults": {
-  #           "onVariation": 1,
-  #           "offVariation": 0
-  #       }
-  #     }
-  #
-  # Above code will create a key 'developer_flag_for_regression' with name as 'developer_flag_for_regression' and description as 'developer_flag_for_regression is created via regression api on 18_10_2022'
-  #
-  # Variations are provided while creating key, by default variation is a boolean value (true and false). once flag with a specific variation is created, its type cannot be modified later, hence choose your variation type smartly (Boolean, String, Number, JSON) In above example we are creating a flag with JSON type and its two values are 'age': 10 and 'age': 20
-  #
-  # Also, variation has by default two values, and you must also define two variations while creating your own custom feature flag
-  #
-  # Default will specify which variation to serve when flag is on or off. In above example when flag is turned on, '1' variation is served [Note: 0 and 1 are index position], so variations at first index ie variations[1] will be served when flag is turned on ie 'age': 20
-
+  # this method will create a new feature flag, NOTE: feature falg are created at global level and environment resides inside feature flag
   def ld_create_flag(key, name = key, description = key, tags = ['created_via_regression_api'])
     @launchdarkly_helper.create_flag(key, name, description, tags)
   end
 
-  # == Update feature flag
-  # https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
-  #
-  # == PATCH REQUEST
-  # https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
-  #
-  # key (*required)
-  #
-  # == Here, 'developer_flag_for_regression' is the flag key and default is our Project name - Browserstack
-  # == You can update any parameter of feature flag using this method
-
+  # this method will be used to toggle status of feature flag either on / off for a particular environment
   def ld_toggle_specific_environment(env, flag, flag_value = true)
     @launchdarkly_helper.toggle_specific_environment(env, flag, flag_value)
   end
 
-  # == Get status of feature flag
-  # https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
-  #
-  # [fetch_flag_toggle_status_response, feature_flag_variation_index_response, feature_flag_variation_value_response, feature_flag_variation_name_response]
-
+  # this method will get important parameters from the response
   def ld_flag_variation_served(env, flag)
     @launchdarkly_helper.flag_variation_served(env, flag)
   end
 
+  # this method will return the index of rules and clauses by searching for clause_name in response
   def ld_rules_clauses_index(env, flag, clause_name)
     @launchdarkly_helper.rules_clauses_index(env, flag, clause_name)
   end
 
+  # this method will return values inside a particular clause by searching for clause_name in response
   def ld_get_values_from_clauses(env, flag, clause_name)
     @launchdarkly_helper.get_values_from_clauses(env, flag, clause_name)
   end
 
+  # this method will help you to add a value to a particular clause by searching for clause_name in response
   def ld_add_values_to_clause(env, flag, clause_name, clause_value)
     @launchdarkly_helper.add_values_to_clause(env, flag, clause_name, clause_value)
   end
 
+  # this method will help you to remove a value to a particular clause by searching for clause_name in response
   def ld_remove_values_from_clause(env, flag, clause_name, clause_value)
     @launchdarkly_helper.remove_values_from_clause(env, flag, clause_name, clause_value)
   end
 
+  # this method will delete a feature flag in launchdarkly (NOTE: env resided inside flag which means flag is parent, so deleting a feature flag will delete it from all environment)
   def ld_delete_flag(flag)
     @launchdarkly_helper.delete_flag(flag)
   end
