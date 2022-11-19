@@ -1,8 +1,10 @@
 # LaunchdarklyApiHelper
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/launchdarkly_api_helper`. To experiment with that code, run `bin/console` for an interactive prompt.
+[LaunchDarklyApiHelper](https://rubygems.org/gems/launchdarkly_api_helper) provides you a way to access your [Launch Darkly](https://apidocs.launchdarkly.com/) account using [API token](https://app.launchdarkly.com/settings/authorization/tokens/new) to view, edit or delete them accordingly.
 
-TODO: Delete this and the text above, and describe your gem
+![alt text](https://docs.launchdarkly.com/static/de107a76f0cd388da14d5bd650ec1f5c/b8471/settings-access-tokens-obscured-callout.png)
+
+[Launch Darkly API Documentation](https://apidocs.launchdarkly.com/)
 
 ## Installation
 
@@ -16,7 +18,193 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-TODO: Write usage instructions here
+add `require 'launchdarkly_api_helper'` line at the beginning of your Ruby file
+
+add `include LaunchdarklyApiHelper` line to access LaunchdarklyApiHelper module in gem _launchdarkly_api_helper_
+
+To perform any operations such as add, remove, replace, move, copy, test you should have a working knowledge of [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902)
+
+```ruby
+parameters:
+access_token (*required): this token will be used to send all requests to LaunchDarkly (string)
+log_file: all logs will be writeen to file 'launchdarkly.log' by default if no file name specified
+
+# set your LD API token and log file to capture logs
+def ld_access_token(access_token, log_file = 'launchdarkly.log') 
+  # code ...
+end
+```
+
+[Get feature flag](https://apidocs.launchdarkly.com/tag/Feature-flags#operation/getFeatureFlag)
+
+```ruby
+GET REQUEST
+https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+                                             
+Here, 'developer_flag_for_regression' is the feature flag name and default is our Project name - eg. AmitSinghBisht
+By default, this returns the configurations for all environments
+You can filter environments with the env query parameter. For example, setting env=staging restricts the returned configurations to just the staging environment
+https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
+
+# this method will give you entire details about a flag for that particular environment
+def ld_fetch_flag_details(env, flag)
+  # code ...
+end
+
+@return value (response of feature flag details):
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
+```
+
+```ruby
+Get toggle status feature flag
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string) 
+flag (*required): name of the feature flag for which you want to get the details (string)
+
+response = https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression?env=staging
+grab the value of the ['environments'][env]['on'] obtained from the above response
+
+# this method will return the status of the flag, whether it is on or off viz set to true or false
+def ld_fetch_flag_toggle_status(env, flag)
+  # code ...
+end
+
+@return value (response of feature flag toggle status):
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
+response['environments'][env]['on'] (boolean)
+```
+
+```ruby
+Create a feature flag
+https://apidocs.launchdarkly.com/tag/Feature-flags/#operation/postFeatureFlag
+
+POST REQUEST
+https://app.launchdarkly.com/api/v2/flags/default
+
+Here, default is our Project name - eg. AmitSinghBisht
+
+parameters:
+key (*required): A unique key used to reference the feature flag in your code (string)
+name (*required): A human-friendly name for the feature flag (string)
+description: Description of the feature flag. Defaults to an empty string (string)
+tags: Tags for the feature flag. Defaults to an empty array (Array of strings)
+variations: An array of possible variations for the flag. The variation values must be unique. If omitted, two boolean variations of true and false will be used (Array of objects)
+
+defaults
+  * onVariation (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is on (integer)
+  * offVariation (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is off (integer)
+
+{
+  "key": "developer_flag_for_regression",
+  "name": "developer_flag_for_regression",
+  "description": "developer_flag_for_regression is created via regression api on 18_10_2022",
+  "tags": [
+    "created_via_regression_api_on_18_10_2022"
+  ],
+  "variations": [
+    {
+      "age": 10
+    },
+    {
+      "age": 20
+    }
+  ],
+  "defaults": {
+    "onVariation": 1,
+    "offVariation": 0
+  }
+}
+
+Above code will create a key 'developer_flag_for_regression' with name as 'developer_flag_for_regression' and description as 'developer_flag_for_regression is created via regression api on 18_10_2022'
+
+Variations are provided while creating key, by default variation is a boolean value (true and false). once flag with a specific variation is created, its type cannot be modified later, hence choose your variation type smartly (Boolean, String, Number, JSON) In above example we are creating a flag with JSON type and its two values are 'age': 10 and 'age': 20
+
+Also, variation has by default two values, and you must also define two variations while creating your own custom feature flag
+
+Default will specify which variation to serve when flag is on or off. In above example when flag is turned on, '1' variation is served [Note: 0 and 1 are index position], so variations at first index ie variations[1] will be served when flag is turned on ie 'age': 20
+
+# this method will create a new feature flag, NOTE: feature falg are created at global level and environment resides inside feature flag
+def ld_create_flag(key, name = key, description = key, tags = ['created_via_regression_api'])
+  # code ...
+end
+```
+
+```ruby
+Update feature flag
+https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
+
+PATCH REQUEST
+https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+flag_value: status of the feature flag that you want to set either on (true) or off (false) (boolean)
+
+Here, 'developer_flag_for_regression' is the flag key and default is our Project name - eg. AmitSinghBisht
+You can update any parameter of feature flag using this method
+
+# this method will be used to toggle status of feature flag either on / off for a particular environment
+def ld_toggle_specific_environment(env, flag, flag_value = true)
+  # code ...
+end
+
+@return value (response of feature flag toggle status):
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
+response['environments'][env]['on'] (boolean)
+```
+
+```ruby
+Get status of feature flag
+https://apidocs.launchdarkly.com/tag/Feature-flags#operation/patchFeatureFlag
+ 
+def ld_toggle_variation_served(env, flag)
+  # code ...
+end
+
+@returns: [fetch_flag_toggle_status_response, feature_flag_variation_index_response, feature_flag_variation_value_response, feature_flag_variation_name_response]
+@return parameter:
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
+fetch_flag_toggle_status_response: response['environments'][env]['on'] (boolean)
+feature_flag_variation_index_response: response (integer)
+feature_flag_variation_value_response: response['variations'][feature_flag_variation_index_response]['value'] (object)
+feature_flag_variation_name_response: response['variations'][feature_flag_variation_index_response]['name'] (string)
+```
+
+```ruby
+def ld_rules_clauses_index(env, flag, clause_name)
+  # code ...
+end
+```
+
+```ruby
+def ld_get_values_from_clauses(env, flag, clause_name)
+  # code ...
+end
+```
+
+```ruby
+def ld_add_values_to_clause(env, flag, clause_name, clause_value)
+  # code ...
+end
+```
+
+```ruby
+def ld__remove_values_from_clause(env, flag, clause_name, clause_value)
+  # code ...
+end
+```
+
+```ruby
+def ld_delete_flag(flag)
+  # code ...
+end
+```
 
 ## Development
 
