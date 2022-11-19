@@ -1,4 +1,12 @@
-# LaunchdarklyApiHelper ![alt_text](https://badge.fury.io/rb/launchdarkly_api_helper.svg)
+# LaunchdarklyApiHelper 
+<div>
+    <a href="https://rubygems.org/gems/launchdarkly_api_helper">
+        <img alt="GEM Version" src="https://img.shields.io/gem/v/launchdarkly_api_helper?color=38C160&logo=ruby&logoColor=FE1616">
+    </a>
+    <a href="https://rubygems.org/gems/launchdarkly_api_helper">
+        <img alt="Gem Downloads" src="https://img.shields.io/gem/dt/launchdarkly_api_helper?color=38C160&logo=ruby&logoColor=FE1616">
+    </a>
+</div>
 
 [LaunchDarklyApiHelper](https://rubygems.org/gems/launchdarkly_api_helper) provides you a way to access your [Launch Darkly](https://apidocs.launchdarkly.com/) account using [API token](https://app.launchdarkly.com/settings/authorization/tokens/new) to view, edit or delete them accordingly.
 
@@ -27,7 +35,7 @@ To perform any operations such as add, remove, replace, move, copy, test you sho
 ```ruby
 parameters:
 access_token (*required): this token will be used to send all requests to LaunchDarkly (string)
-project_name: provide project name of your organistaion (NOTE: for most, it should be `default` unless you have made some explicit changes)
+project_name: provide project name of your organization (NOTE: for most, it should be `default` unless you have made some explicit changes)
 log_file: all logs will be written to file 'launchdarkly.log' by default if no file name specified (string)
 
 # set your LD API token and log file to capture logs
@@ -261,7 +269,8 @@ def ld_add_values_to_clause(env, flag, clause_name, clause_value)
 end
 
 @return parameter: (response of feature flag details)
-response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
+response[rule_at_index]['clauses'][clause_at_index]['values'] (string)
 ```
 
 ```ruby
@@ -277,7 +286,8 @@ def ld_remove_values_from_clause(env, flag, clause_name, clause_value)
 end
 
 @return parameter: (response of feature flag details)
-response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
+response[rule_at_index]['clauses'][clause_at_index]['values'] (string)
 ```
 
 ```ruby
