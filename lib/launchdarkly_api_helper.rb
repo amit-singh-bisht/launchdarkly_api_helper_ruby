@@ -144,8 +144,8 @@ module LaunchdarklyApiHelper
   #
   # [fetch_flag_toggle_status_response, feature_flag_variation_index_response, feature_flag_variation_value_response, feature_flag_variation_name_response]
 
-  def ld_toggle_variation_served(env, flag)
-    @launchdarkly_helper.ld_toggle_variation_served(env, flag)
+  def ld_flag_variation_served(env, flag)
+    @launchdarkly_helper.flag_variation_served(env, flag)
   end
 
   def ld_rules_clauses_index(env, flag, clause_name)

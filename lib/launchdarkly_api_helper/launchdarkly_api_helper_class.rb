@@ -90,7 +90,7 @@ class LaunchdarklyApiHelperClass
     details_response['variations'][index_response]['name']
   end
 
-  def ld_toggle_variation_served(env, flag)
+  def flag_variation_served(env, flag)
     details_response = fetch_flag_details(env, flag)
     toggle_status_response = fetch_flag_toggle_status(env, flag)
     variation_index_response = feature_flag_variation_index(toggle_status_response, details_response) # ['environments'][env]['fallthrough']['variation']
