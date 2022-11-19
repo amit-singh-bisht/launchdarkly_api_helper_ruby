@@ -160,7 +160,7 @@ module LaunchdarklyApiHelper
     @launchdarkly_helper.add_values_to_clause(env, flag, clause_name, clause_value)
   end
 
-  def ld__remove_values_from_clause(env, flag, clause_name, clause_value)
+  def ld_remove_values_from_clause(env, flag, clause_name, clause_value)
     @launchdarkly_helper.remove_values_from_clause(env, flag, clause_name, clause_value)
   end
 

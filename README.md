@@ -55,7 +55,7 @@ def ld_fetch_flag_details(env, flag)
   # code ...
 end
 
-@return value (response of feature flag details):
+@return parameter: (response of feature flag details)
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" (string)
 ```
 
@@ -74,7 +74,7 @@ def ld_fetch_flag_toggle_status(env, flag)
   # code ...
 end
 
-@return value (response of feature flag toggle status):
+@return parameter: (response of feature flag toggle status)
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 response['environments'][env]['on'] (boolean)
 ```
@@ -154,7 +154,7 @@ def ld_toggle_specific_environment(env, flag, flag_value = true)
   # code ...
 end
 
-@return value (response of feature flag toggle status):
+@return parameter: (response of feature flag toggle status)
 response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 response['environments'][env]['on'] (boolean)
 ```
@@ -181,33 +181,121 @@ feature_flag_variation_name_response: response['variations'][feature_flag_variat
 ```
 
 ```ruby
+
+"rules": [
+  {                                   # rules/0
+    "variation": 0,
+    "clauses": [
+      {                               # rules/0/clauses/0
+        "attribute": "groups",
+        "op": "in",
+        "values": ["Top Customers"],
+        "negate": false
+      },
+      {                               # rules/0/clauses/1
+        "attribute": "email",
+        "op": "endsWith",
+        "values": ["gmail.com"],
+        "negate": false
+      }
+    ]
+  },
+  {                                   # rules/1
+    "variation": 1,
+    "clauses": [
+      {                               # rules/1/clauses/0
+        "attribute": "country",
+        "op": "in",
+        "values": [
+          "in",                       # rules/1/clauses/0/values/0
+          "eu"                        # rules/1/clauses/0/values/1
+        ],
+        "negate": false
+      }
+    ]
+  }
+]
+
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+
 def ld_rules_clauses_index(env, flag, clause_name)
   # code ...
 end
+
+@returns: [rule_at_index, clause_at_index]
+@return parameter:
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" ['environments'][env]['rules']
+rule_at_index = response[rule_index] # index at which rule is found
+clause_at_index = response[rule_index]['clauses'][clause_index] # index at which clause is found 
 ```
 
 ```ruby
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+
 def ld_get_values_from_clauses(env, flag, clause_name)
   # code ...
 end
+
+@return parameter: values_for_clause_name
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}" ['environments'][env]['rules']
+values_for_clause_name = response[rule_at_index]['clauses'][clause_at_index]['values']
 ```
 
 ```ruby
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+clause_value (*required): value that you want to add to a particular clause (NOTE: it will be appened at zeroth 0th index)
+
 def ld_add_values_to_clause(env, flag, clause_name, clause_value)
   # code ...
 end
+
+@return parameter: (response of feature flag details)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 ```
 
 ```ruby
-def ld__remove_values_from_clause(env, flag, clause_name, clause_value)
+parameters:
+env (*required): name of the environment for which you want to get the details (string)
+flag (*required): name of the feature flag for which you want to get the details (string)
+clause_name (*required): name of clause that you want to search for in response
+clause_value (*required): value that you want to add to a particular clause (NOTE: it will be appened at zeroth 0th index)
+
+def ld_remove_values_from_clause(env, flag, clause_name, clause_value)
   # code ...
 end
+
+@return parameter: (response of feature flag details)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 ```
 
 ```ruby
+Delete feature flag
+https://apidocs.launchdarkly.com/tag/Feature-flags#operation/deleteFeatureFlag
+
+DELETE REQUEST
+https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression
+
+Here, 'developer_flag_for_regression' is the flag key and default is our Project name - eg. AmitSinghBisht
+You can delete any feature flag using this method
+
+parameters:
+flag (*required): name of the feature flag for which you want to get the details (string)
+
 def ld_delete_flag(flag)
   # code ...
 end
+
+@return parameter: (response of feature flag details)
+response = "https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}"
 ```
 
 ## Development
