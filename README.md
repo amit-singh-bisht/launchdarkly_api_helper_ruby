@@ -8,9 +8,9 @@
     </a>
 </div>
 
-[LaunchDarklyApiHelper](https://rubygems.org/gems/launchdarkly_api_helper) provides you a way to access your [Launch Darkly](https://apidocs.launchdarkly.com/) account using [API token](https://app.launchdarkly.com/settings/authorization/tokens/new) to view, edit or delete them accordingly.
+<br>
 
-![alt text](https://docs.launchdarkly.com/static/de107a76f0cd388da14d5bd650ec1f5c/b8471/settings-access-tokens-obscured-callout.png)
+[LaunchDarklyApiHelper](https://rubygems.org/gems/launchdarkly_api_helper) provides you a way to access your [Launch Darkly](https://apidocs.launchdarkly.com/) account using [API token](https://app.launchdarkly.com/settings/authorization/tokens/new) to view, edit or delete them accordingly.
 
 <br>
 
@@ -46,6 +46,8 @@ Projects allow you to manage multiple different software projects under one Laun
 
 ### [Set Access Token](https://apidocs.launchdarkly.com/tag/Access-tokens)
 
+![alt text](https://docs.launchdarkly.com/static/de107a76f0cd388da14d5bd650ec1f5c/b8471/settings-access-tokens-obscured-callout.png)
+
 **_parameters for `ld_access_token` method_**
 - **access_token (*required)**: this token will be used to send all requests to LaunchDarkly (string)
 - **project_name**: provide project name of your organization (NOTE: for most, it should be `default` unless you have made some explicit changes)
@@ -70,19 +72,14 @@ Here, `default` is our Project name - eg. AmitSinghBisht
 
 parameters:
 
-**key (*required)**: A unique key used to reference the feature flag in your code (string)
-
-**name (*required)**: A human-friendly name for the feature flag (string)
-
-**description**: Description of the feature flag. Defaults to an empty string (string)
-
-**tags**: Tags for the feature flag. Defaults to an empty array (Array of strings)
-
-**variations**: An array of possible variations for the flag. The variation values must be unique. If omitted, two boolean variations of true and false will be used (Array of objects)
-
-**defaults**
-* onVariation (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is on (integer)
-* offVariation (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is off (integer)
+- **key (*required)**: A unique key used to reference the feature flag in your code (string)
+- **name (*required)**: A human-friendly name for the feature flag (string)
+- **description**: Description of the feature flag. Defaults to an empty string (string)
+- **tags**: Tags for the feature flag. Defaults to an empty array (Array of strings)
+- **variations**: An array of possible variations for the flag. The variation values must be unique. If omitted, two boolean variations of true and false will be used (Array of objects)
+- **defaults**
+  - **onVariation** (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is on (integer)
+  - **offVariation** (*required): The index, from the array of variations for this flag, of the variation to serve by default when targeting is off (integer)
 
 ```ruby
 {
@@ -130,7 +127,7 @@ end
 
 **_@return parameter_**: (response of feature flag details)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}` (string)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}` (string)
 
 <br>
 
@@ -164,7 +161,7 @@ end
 
 **_@return parameter_**: (response of feature flag details)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}` (string)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}` (string)
 
 <br>
 
@@ -181,11 +178,10 @@ def ld_fetch_flag_toggle_status(env, flag)
 end
 ```
 
-**_@return parameter_**: (response of feature flag toggle status)
+**_@return parameter_**: (response of feature flag toggle status viz. response_on)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
-response_on = `response['environments'][env]['on']` (boolean)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
+- response_on = `response['environments'][env]['on']` (boolean)
 
 <br>
 
@@ -206,15 +202,11 @@ end
 
 **_@return parameter_**:
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
-fetch_flag_toggle_status_response: `response['environments'][#{env}]['on']` (boolean)
-
-feature_flag_variation_index_response: `response` (integer)
-
-feature_flag_variation_value_response: `response['variations'][#{feature_flag_variation_index_response}]['value']` (string)
-
-feature_flag_variation_name_response: `response['variations'][#{feature_flag_variation_index_response}]['name']` (string)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
+- fetch_flag_toggle_status_response: `response['environments'][#{env}]['on']` (boolean)
+- feature_flag_variation_index_response: `response` (integer)
+- feature_flag_variation_value_response: `response['variations'][#{feature_flag_variation_index_response}]['value']` (string)
+- feature_flag_variation_name_response: `response['variations'][#{feature_flag_variation_index_response}]['name']` (string)
 
 <br>
 
@@ -228,7 +220,7 @@ Example: `https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_r
 
 **1. UPDATE FEATURE FLAG TOGGLE STATUS**
 
-Here, 'developer_flag_for_regression' is the flag key and `default` is our Project name - eg. AmitSinghBisht
+Here, `developer_flag_for_regression` is the flag key and `default` is our Project name - eg. AmitSinghBisht
 
 You can update any parameter of feature flag using this method
 
@@ -244,11 +236,10 @@ def ld_toggle_specific_environment(env, flag, flag_value = true)
 end
 ```
 
-**_@return parameter_**: (response of feature flag toggle status)
+**_@return parameter_**: (response of feature flag toggle status viz. response_on)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
-response_on = `response['environments'][env]['on']` (boolean)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
+- response_on = `response['environments'][env]['on']` (boolean)
 
 <br>
 
@@ -310,13 +301,10 @@ end
 
 **_@return parameter_**:
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
-response_rules = `response['environments'][#{env}]['rules']`
-
-rule_at_index = `response_rules[rule_index]`  (integer) # index at which rule is found
-
-clause_at_index = `response_rules[rule_index]['clauses'][clause_index]`  (integer) # index at which clause is found 
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
+- response_rules = `response['environments'][#{env}]['rules']`
+- rule_at_index = `response_rules[rule_index]`  (integer) # index at which rule is found
+- clause_at_index = `response_rules[rule_index]['clauses'][clause_index]`  (integer) # index at which clause is found 
 
 <br>
 
@@ -337,9 +325,7 @@ end
 **@return parameter**: values_for_clause_name
 
 - response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
 - response_rules = `response['environments'][#{env}]['rules']`
-
 - values_for_clause_name = `response_rules[rule_at_index]['clauses'][clause_at_index]['values']` (string)
 
 <br>
@@ -359,13 +345,11 @@ def ld_add_values_to_clause(env, flag, clause_name, clause_value)
 end
 ```
 
-**@return parameter**: (response of feature flag details)
+**@return parameter**: (response of feature flag details viz. updated_clause_value)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
-response_rules = `response['environments'][#{env}]['rules']`
-
-updated_clause_value = response_rules[rule_at_index]['clauses'][clause_at_index]['values'] (string)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
+- response_rules = `response['environments'][#{env}]['rules']`
+- updated_clause_value = `response_rules[rule_at_index]['clauses'][clause_at_index]['values']` (string)
 
 <br>
 
@@ -384,13 +368,11 @@ def ld_remove_values_from_clause(env, flag, clause_name, clause_value)
   # code ...
 end
 ```
-**@return parameter**: (response of feature flag details)
+**@return parameter**: (response of feature flag details viz. updated_clause_value)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
-
-response_rules = `response['environments'][#{env}]['rules']`
-
-updated_clause_value = response_rules[rule_at_index]['clauses'][clause_at_index]['values'] (string)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}`
+- response_rules = `response['environments'][#{env}]['rules']`
+- updated_clause_value = `response_rules[rule_at_index]['clauses'][clause_at_index]['values']` (string)
 
 <br>
 
@@ -400,7 +382,7 @@ Sample: `https://app.launchdarkly.com/api/v2/flags/<project_name>/<feature_flag_
 
 Example: `https://app.launchdarkly.com/api/v2/flags/default/developer_flag_for_regression`
 
-Here, 'developer_flag_for_regression' is the flag key and default is our Project name - eg. AmitSinghBisht
+Here, `developer_flag_for_regression` is the flag key and default is our Project name - eg. AmitSinghBisht
 
 You can delete any feature flag using this method
 
@@ -416,7 +398,7 @@ end
 
 **@return parameter**: (response of feature flag details)
 
-response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}` (string)
+- response = `https://app.launchdarkly.com/api/v2/flags/default/#{flag}?env=#{env}` (string)
 
 <br>
 
