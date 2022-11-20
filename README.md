@@ -336,7 +336,7 @@ end
 - **env** (*required): name of the environment for which you want to get the details (string)
 - **flag** (*required): name of the feature flag for which you want to get the details (string)
 - **clause_name** (*required): name of clause that you want to search for in response (string)
-- **clause_value** (*required): value that you want to add to a particular clause (NOTE: it will be appended at zeroth 0th index) (string || number || json || object) 
+- **clause_value** (*required): value that you want to add to a particular clause (NOTE: it will be appended at zeroth 0th index) (string | number | json | object) 
 
 ```ruby
 # this method will help you to add a value to a particular clause by searching for clause_name in response
@@ -359,7 +359,7 @@ end
 - **env** (*required): name of the environment for which you want to get the details (string)
 - **flag** (*required): name of the feature flag for which you want to get the details (string)
 - **clause_name** (*required): name of clause that you want to search for in response (string)
-- **clause_value** (*required): value that you want to add to a particular clause (NOTE: it will be appended at zeroth 0th index) (string || number || json || object)
+- **clause_value** (*required): value that you want to add to a particular clause (NOTE: it will be appended at zeroth 0th index) (string | number | json | object)
 
 
 ```ruby
