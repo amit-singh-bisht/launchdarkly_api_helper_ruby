@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ['amit-singh-bisht']
   spec.email = ['bishtamitsingh98@gmail.com']
 
-  spec.summary = 'LaunchDarklyApiHelper provides you a way to access your Launch Darkly account using API token to view, edit or delete them accordingly. https://amit-singh-bisht.github.io/launchdarkly_api_helper_ruby/'
-  spec.description = 'LaunchDarklyApiHelper provides you a way to access your Launch Darkly account using API token to view, edit or delete them accordingly. https://amit-singh-bisht.github.io/launchdarkly_api_helper_ruby/'
+  spec.summary = 'LaunchDarklyApiHelper provides you a way to access your Launch Darkly account using API token to view, edit or delete them accordingly. https://bit.ly/ld_doc'
+  spec.description = 'LaunchDarklyApiHelper provides you a way to access your Launch Darkly account using API token to view, edit or delete them accordingly. https://bit.ly/ld_doc'
   spec.homepage = 'https://github.com/amit-singh-bisht/launchdarkly_api_helper_ruby'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 2.5.0'
