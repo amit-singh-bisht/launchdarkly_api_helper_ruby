@@ -32,11 +32,17 @@ add `include LaunchdarklyApiHelper` line to access LaunchdarklyApiHelper module 
 
 To perform any operations such as add, remove, replace, move, copy, test you should have a working knowledge of [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902)
 
+Projects allow you to manage multiple different software projects under one LaunchDarkly account. Each project has its own unique set of environments and feature flags. To learn more, read [Projects](https://docs.launchdarkly.com/home/organize/projects)
+
+![alt text](https://docs.launchdarkly.com/static/082f7fa3cbb6ed1081425340586e47ad/fe238/projects-two-app-types.png)
+
+![alt text](https://docs.launchdarkly.com/static/55307ea3f0a386269181a1982fcc20ff/75a80/settings-projects-create.png)
+
 ```ruby
 parameters:
-access_token (*required): this token will be used to send all requests to LaunchDarkly (string)
-project_name: provide project name of your organization (NOTE: for most, it should be `default` unless you have made some explicit changes)
-log_file: all logs will be written to file 'launchdarkly.log' by default if no file name specified (string)
+access_token (*required) - this token will be used to send all requests to LaunchDarkly (string)
+project_name - provide project name of your organization (NOTE: for most, it should be `default` unless you have made some explicit changes)
+log_file - all logs will be written to file 'launchdarkly.log' by default if no file name specified (string)
 
 # set your LD API token and log file to capture logs
 def ld_access_token(access_token, project_name = 'default', log_file = 'launchdarkly.log') 
